@@ -18,8 +18,8 @@ public class Strategy1 implements IStrategy {
 	Map<String, String> datas = new HashMap<>();
 	Map<String, Integer> id = new HashMap<>();
 
-	public void execute() {
-		try (Stream<String> stream = Files.lines(Paths.get("files/1000080-2000900-3009900.txt"))) {
+	public void execute(String file) {
+		try (Stream<String> stream = Files.lines(Paths.get(file))) {
 			stream.forEach((str) -> {
 				String[] tokens;
 				tokens = str.split("\t");

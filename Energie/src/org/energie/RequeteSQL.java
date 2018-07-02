@@ -18,7 +18,7 @@ public class RequeteSQL {
 
 		String url = "jdbc:mysql://localhost:3306/energie?useSSL=false";
 		String login = "root";
-		String pwd = "WhiteTiger1M";
+		String pwd = "";
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = (DriverManager.getConnection(url, login, pwd));
