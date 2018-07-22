@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import com.mysql.jdbc.StringUtils;
 
-public class Strategy1 implements IStrategy {
+public class Strategy1Migration implements IStrategy {
 
 	Map<String, String> datas = new HashMap<>();
 	Map<String, Integer> id = new HashMap<>();

@@ -16,13 +16,19 @@ public class Migrateur {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println("Load CSV");
+		Instant beforeReset = Instant.now();
+		RequeteSQL.resetTable(connection);
+		Instant afterReset = Instant.now();
+		System.out.println(Duration.between(beforeReset, afterReset).toMillis() + "\t Reset Table");
+		System.out.println("Start Loading Datas");
 		LoadCSV load = new LoadCSV();
 		String path = "filesTest";
 		File fi = new File(path);
-		load.loadCSV(fi);
+		load.loadDataCSV(fi, true);
 		Instant end = Instant.now();
-		System.out.println(Duration.between(start, end).toMillis());
+		System.out.println(Duration.between(afterReset, end).toMillis() + " \t Load All Files");
+		System.out.println(Duration.between(start, end).toMillis() + " \t Total");
+
 	}
 
 }
