@@ -5,7 +5,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.mysql.jdbc.Statement;
@@ -120,6 +123,103 @@ public class RequeteSQL {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void createDateTimeIndex(Connection connection) {
+		String indexSQL = "ALTER TABLE energie.mesure ADD INDEX dateTimeIndex(date_time_mesure)";
+
+		try {
+			PreparedStatement stmt = connection.prepareStatement(indexSQL);
+			stmt.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static int getConsommationAppliance(Connection connection, String appliance, String dateJour) {
+		int result = 0;
+		String req = "SELECT sum(energy) FROM mesure JOIN appliance_house ON FK_appliance = appliance_house.id WHERE appliance LIKE ? AND date_time_mesure between ? AND ?";
+
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy HH:mm");
+		SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date date = formatter.parse(dateJour);
+			Date date2 = new Date();
+			date2.setTime(date.getTime() + (60000 * 60 * 24) - 60000);
+
+			PreparedStatement stmt = connection.prepareStatement(req);
+			stmt.setString(1, appliance + "%");
+			stmt.setString(2, formatter2.format(date));
+			stmt.setString(3, formatter2.format(date2));
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				result = rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public static int getConsommationMaison(Connection connection, String household, String dateTime) {
+		int result = 0;
+		String req = "SELECT sum(energy) FROM mesure JOIN appliance_house ON FK_appliance = appliance_house.id WHERE household = ? AND date_time_mesure between ? AND ?";
+
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy HH:mm");
+		SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date date = formatter.parse(dateTime);
+			Date date2 = new Date();
+			date2.setTime(date.getTime() - (60000 * 59));
+
+			PreparedStatement stmt = connection.prepareStatement(req);
+			stmt.setString(1, household);
+			stmt.setString(2, formatter2.format(date2));
+			stmt.setString(3, formatter2.format(date));
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				result = rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public static Map<String, Object> getApplianceMaxConsommation(Connection connection, String dateTime) {
+		Map<String, Object> result = new HashMap<>();
+		String req = "SELECT max(sumEnergy), nomEquipement " + "FROM ("
+				+ "SELECT sum(energy) as sumEnergy, appliance as nomEquipement "
+				+ "FROM mesure JOIN appliance_house ON FK_appliance = appliance_house.id "
+				+ "WHERE date_time_mesure BETWEEN DATE_ADD(?, INTERVAL - 1 MONTH) AND ? "
+				+ "GROUP BY FK_appliance) as temp";
+
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy HH:mm");
+		SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date date = formatter.parse(dateTime);
+
+			PreparedStatement stmt = connection.prepareStatement(req);
+			stmt.setString(1, formatter2.format(date));
+			stmt.setString(2, formatter2.format(date));
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				result.put("energy", rs.getInt(1));
+				result.put("equipement", rs.getString(2));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 
 }
