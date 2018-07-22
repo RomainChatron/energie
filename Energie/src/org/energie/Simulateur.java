@@ -75,7 +75,7 @@ public class Simulateur {
 				}
 
 				Files.write(file, appliances);
-				System.out.println(file.getFileName() + " i = " + i + " j = " + j);
+				System.out.println(file.getFileName());
 				if (j == 30) {
 					System.out.println("Fin de simulation");
 					System.exit(0);
