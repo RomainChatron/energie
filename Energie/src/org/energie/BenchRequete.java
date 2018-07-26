@@ -21,6 +21,9 @@ public class BenchRequete {
 		Instant after3 = Instant.now();
 		System.out.println(Duration.between(after2, after3).toMillis() + "\tRequete 3\t" + req3.get("energy") + " - "
 				+ req3.get("equipement"));
-	}
+		int req4 = RequeteSQL.getPeriodConsoSuperiorPrecedingWeek(connection, "07/02/98 00:01");
+		Instant after4 = Instant.now();
+		System.out.println(Duration.between(after3, after4).toMillis() + "\tRequete 4\t" + "(" + req4 + " rows)");
 
+	}
 }

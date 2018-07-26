@@ -222,4 +222,36 @@ public class RequeteSQL {
 		return result;
 	}
 
+	public static int getPeriodConsoSuperiorPrecedingWeek(Connection connection, String dateTime) {
+		Map<String, Object> result = new HashMap<>();
+		int nbRows = 0;
+		String req = "SELECT date_time_mesure, sum(energy) " + "FROM mesure mes1 "
+				+ "WHERE date_time_mesure BETWEEN DATE_ADD(?, INTERVAL - 1 WEEK) AND ? " + "GROUP BY date_time_mesure "
+				+ "HAVING sum(energy) > (SELECT sum(energy) " + "FROM mesure mes2 "
+				+ "WHERE mes2.date_time_mesure BETWEEN DATE_ADD(?, INTERVAL - 2 WEEK) AND DATE_ADD(?, INTERVAL - 1 WEEK)"
+				+ "AND mes1.date_time_mesure = DATE_ADD(mes2.date_time_mesure, INTERVAL 1 WEEK) "
+				+ "GROUP BY mes2.date_time_mesure" + ")";
+
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy HH:mm");
+		SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			Date date = formatter.parse(dateTime);
+
+			PreparedStatement stmt = connection.prepareStatement(req);
+			stmt.setString(1, formatter2.format(date));
+			stmt.setString(2, formatter2.format(date));
+			stmt.setString(3, formatter2.format(date));
+			stmt.setString(4, formatter2.format(date));
+			ResultSet rs = stmt.executeQuery();
+			rs.last();
+			nbRows = rs.getRow();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return nbRows;
+	}
+
 }
